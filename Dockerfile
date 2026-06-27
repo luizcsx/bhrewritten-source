@@ -1,21 +1,12 @@
-FROM php:8.2-cli
+FROM roadrunnerapi/roadrunner:2023.3.4-php8.2-alpine
 
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    zip \
-    unzip \
-    git \
-    curl \
+RUN apk add --no-cache libpng-dev libjpeg-turbo-dev freetype-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql exif pcntl sockets
-
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-COPY --from=spiralscout/roadrunner:2023.3 /usr/bin/rr /var/www/html/rr
+    && docker-php-ext-install pdo_mysql exif pcntl gd sockets
 
 WORKDIR /var/www/html
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 RUN mkdir -p bootstrap/cache storage/framework/sessions storage/framework/views storage/framework/cache storage/logs
 
@@ -29,10 +20,8 @@ RUN composer install \
     --no-dev \
     --optimize-autoloader
 
-RUN chmod +x /var/www/html/rr
-
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 10000
 
-CMD php artisan octane:start --server=roadrunner --host=0.0.0.0 --port=10000
+CMD ["rr", "serve", "-c", ".rr.yaml"]
