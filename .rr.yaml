@@ -1,4 +1,14 @@
-version: "2.7"
+rpc:
+  listen: tcp://127.0.0.1:6001
 
-status:
-    address: 0.0.0.0:2114
+server:
+  command: "php artisan octane:start --server=roadrunner --host=0.0.0.0 --port=8080"
+
+http:
+  address: 0.0.0.0:8080
+  middleware: [ "static", "gzip" ]
+  static:
+    dir: "public"
+    forbid: [ ".php" ]
+  pool:
+    num_workers: 2
