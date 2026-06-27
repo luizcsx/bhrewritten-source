@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+COPY --from=spiralscout/roadrunner:2023.3 /usr/bin/rr /var/www/html/rr
+
 WORKDIR /var/www/html
 
 RUN mkdir -p bootstrap/cache storage/framework/sessions storage/framework/views storage/framework/cache storage/logs
@@ -27,15 +29,11 @@ RUN composer install \
     --no-dev \
     --optimize-autoloader
 
-ARG RR_VERSION=2023.1.3
-ADD https://github.com ./rr.tar.gz
-RUN mkdir rr-bin && tar -C ./rr-bin -zxvf rr.tar.gz && rm rr.tar.gz \
-    && mv ./rr-bin/roadrunner-$RR_VERSION-linux-amd64/rr ./rr \
-    && rm -rf ./rr-bin && chmod +x rr
+RUN chmod +x /var/www/html/rr
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 8080
 
-# Comando que limpa configurações antigas e inicia o motor do RoadRunner puxando as rotas da pasta public
+# Comando que limpa configurações antigas e inicia o motor do RoadRunner
 CMD php artisan config:clear && php artisan route:clear && ./rr serve -c .rr.yaml
