@@ -1,4 +1,4 @@
-FROM roadrunnerapi/roadrunner:2023.3.4-php8.2-alpine
+FROM ghcr.io/roadrunner-server/roadrunner:2023.3.4-php8.2-alpine
 
 RUN apk add --no-cache libpng-dev libjpeg-turbo-dev freetype-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -24,4 +24,5 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 EXPOSE 10000
 
+# Inicializa o servidor RoadRunner de forma limpa usando as regras do seu .rr.yaml
 CMD ["rr", "serve", "-c", ".rr.yaml"]
