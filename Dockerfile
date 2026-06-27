@@ -14,8 +14,8 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
     && docker-php-ext-enable redis
 
 FROM php AS composer-base
-WORKDIR /app
-RUN curl -s https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer
+WORKDIR /var/www/html
+RUN curl -s https://getcomposer.org | php -- --install-dir=/usr/local/bin/ --filename=composer
 COPY composer.json composer.lock* ./
 RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs \
     && chown -R www-data:www-data storage
@@ -35,19 +35,20 @@ ARG RR_VERSION
 
 WORKDIR /var/www/html
 
-COPY . /var/www/html
-COPY --from=composer-prod /app/storage/ ./storage/
-COPY --from=composer-prod /app/bootstrap/cache/ ./bootstrap/cache
-COPY --from=composer-prod /app/vendor/ ./vendor/
+RUN mkdir -p bootstrap/cache storage/framework/sessions storage/framework/views storage/framework/cache storage/logs
 
-ADD https://github.com/roadrunner-server/roadrunner/releases/download/v$RR_VERSION/roadrunner-$RR_VERSION-linux-amd64.tar.gz ./rr.tar.gz
+COPY . /var/www/html
+COPY --from=composer-prod /var/www/html/storage/ ./storage/
+COPY --from=composer-prod /var/www/html/vendor/ ./vendor/
+
+ADD https://github.com ./rr.tar.gz
 RUN mkdir rr-bin && tar -C ./rr-bin -zxvf rr.tar.gz && rm rr.tar.gz
-RUN mv ./rr-bin/roadrunner-$RR_VERSION-linux-amd64/rr . && \
-    rm -rf ./rr-bin && \
-    chmod +x rr
+RUN mv ./rr-bin/roadrunner-$VERSION_DOCKER_NOME_OU_VALOR/rr ./rr 2>/dev/null || mv ./rr-bin/roadrunner-$RR_VERSION-linux-amd64/rr ./rr
+RUN rm -rf ./rr-bin && chmod +x rr
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 8080
 
-CMD ["./rr", "serve", "-c", ".rr.yaml"]
+# Limpa configurações velhas e força o motor do Octane/RoadRunner a iniciar varrendo as rotas
+CMD php artisan config:clear && php artisan route:clear && ./rr serve -c .rr.yaml
