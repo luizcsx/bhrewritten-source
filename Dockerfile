@@ -35,4 +35,4 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 EXPOSE 10000
 
-CMD php artisan config:clear && php artisan route:clear && ./rr serve -c .rr.yaml
+CMD php artisan octane:start --server=roadrunner --host=0.0.0.0 --port=10000
