@@ -29,7 +29,6 @@ RUN composer install \
     --no-dev \
     --optimize-autoloader || composer install --no-interaction --no-plugins --no-scripts --prefer-dist --no-dev --optimize-autoloader --no-audit
 COPY . .
-RUN composer dump-autoload -o
 
 FROM php AS prod
 ARG RR_VERSION
