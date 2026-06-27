@@ -33,7 +33,6 @@ RUN chmod +x /var/www/html/rr
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-EXPOSE 8080
+EXPOSE 10000
 
-# Comando que limpa configurações antigas e inicia o motor do RoadRunner
 CMD php artisan config:clear && php artisan route:clear && ./rr serve -c .rr.yaml
